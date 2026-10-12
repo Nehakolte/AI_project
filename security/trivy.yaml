@@ -1,0 +1,6 @@
+# Example Trivy configuration. Run: trivy image --config security/trivy.yaml ai-ecommerce-devops:latest
+severity:
+  - HIGH
+  - CRITICAL
+ignore-unfixed: true
+exit-code: 1

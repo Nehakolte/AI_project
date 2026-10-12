@@ -1,0 +1,1 @@
+Place reusable Ansible roles here, for example roles/docker_prerequisites/tasks/main.yml. The included playbook is a safe local validation playbook.

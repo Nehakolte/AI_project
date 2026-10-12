@@ -1,0 +1,1 @@
+Start the optional monitoring containers with `docker compose -f docker/docker-compose.yml --profile monitoring up --build -d`. Prometheus is at http://localhost:9090 and Grafana at http://localhost:3000. The Flask app exposes a health endpoint, not Prometheus-format metrics; add an exporter/instrumentation before expecting app metrics.

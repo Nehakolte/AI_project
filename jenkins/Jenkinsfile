@@ -1,0 +1,60 @@
+pipeline {
+  agent any
+  options { timestamps(); disableConcurrentBuilds() }
+  environment {
+    IMAGE_NAME = 'ai-ecommerce-devops'
+    IMAGE_TAG = "${BUILD_NUMBER}"
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Validate files') {
+      steps {
+        script {
+          if (isUnix()) { sh 'test -f application/app.py && test -f docker/Dockerfile' }
+          else { bat 'if not exist application/app.py exit /b 1\nif not exist docker/Dockerfile exit /b 1' }
+        }
+      }
+    }
+    stage('Unit tests') {
+      steps {
+        script {
+          if (isUnix()) { sh 'python3 -m pip install -r application/requirements.txt && cd application && python3 -m unittest -v' }
+          else { bat 'py -m pip install -r application/requirements.txt\ncd application && py -m unittest -v' }
+        }
+      }
+    }
+    stage('Build Docker image') {
+      steps {
+        script {
+          if (isUnix()) { sh 'docker build -f docker/Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest .' }
+          else { bat 'docker build -f docker/Dockerfile -t %IMAGE_NAME%:%IMAGE_TAG% -t %IMAGE_NAME%:latest .' }
+        }
+      }
+    }
+    stage('Container smoke test') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh """docker rm -f ecommerce-ci-test >/dev/null 2>&1 || true
+docker run -d --name ecommerce-ci-test -p 5055:5000 ${IMAGE_NAME}:${IMAGE_TAG}
+trap 'docker rm -f ecommerce-ci-test >/dev/null 2>&1 || true' EXIT
+for i in \$(seq 1 20); do curl -fsS http://127.0.0.1:5055/api/health && exit 0; sleep 2; done
+docker logs ecommerce-ci-test; exit 1"""
+          } else {
+            bat """docker rm -f ecommerce-ci-test 2>NUL
+ docker run -d --name ecommerce-ci-test -p 5055:5000 %IMAGE_NAME%:%IMAGE_TAG%
+ powershell -NoProfile -Command \"\$ok=\$false; for(\$i=0;\$i -lt 20;\$i++){try{Invoke-RestMethod http://127.0.0.1:5055/api/health -TimeoutSec 2; \$ok=\$true; break}catch{Start-Sleep 2}}; if(-not \$ok){exit 1}\"
+ docker rm -f ecommerce-ci-test"""
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      script { if (isUnix()) { sh 'docker rm -f ecommerce-ci-test >/dev/null 2>&1 || true' } else { bat 'docker rm -f ecommerce-ci-test 2>NUL' } }
+    }
+    success { echo 'CI succeeded: tests passed, image built, container health verified.' }
+    failure { echo 'CI failed. Open the failing stage logs and fix the error before redeploying.' }
+  }
+}

@@ -1,0 +1,18 @@
+# Optional: requires an Ingress controller such as ingress-nginx in your local cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecommerce
+  namespace: ecommerce
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ecommerce.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ecommerce
+                port: { number: 80 }

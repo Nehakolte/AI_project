@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-ecommerce
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: {{ .Release.Name }}-ecommerce }
+  template:
+    metadata:
+      labels: { app: {{ .Release.Name }}-ecommerce }
+    spec:
+      containers:
+        - name: ecommerce
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports: [{ containerPort: {{ .Values.containerPort }} }]
+          readinessProbe:
+            httpGet: { path: /api/health, port: {{ .Values.containerPort }} }
+            initialDelaySeconds: 5
+          resources:
+{{ toYaml .Values.resources | indent 12 }}

@@ -1,0 +1,12 @@
+replicaCount: 1
+image:
+  repository: ai-ecommerce-devops
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  port: 80
+containerPort: 5000
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 256Mi }

@@ -1,0 +1,1 @@
+ELK is intentionally not started by default because Elasticsearch is memory-heavy on laptops. For a local extension, add Elasticsearch, Logstash and Kibana services with pinned versions and suitable Docker memory limits. Never log passwords, tokens, payment details or customer secrets.

@@ -1,0 +1,1 @@
+Scripts are Bash scripts intended for Linux/WSL/Git Bash. On Windows PowerShell, use the equivalent Docker Compose commands in the root README. Review scripts before running them. `cleanup.sh` does not delete volumes by default.
